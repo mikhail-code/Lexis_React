@@ -1,8 +1,32 @@
 #root {
+  @apply gfs-neohellenic-regular;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  /* padding: 2rem; */
   text-align: center;
+}
+.gfs-neohellenic-regular {
+  font-family: "GFS Neohellenic", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.gfs-neohellenic-bold {
+  font-family: "GFS Neohellenic", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.gfs-neohellenic-regular-italic {
+  font-family: "GFS Neohellenic", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.gfs-neohellenic-bold-italic {
+  font-family: "GFS Neohellenic", sans-serif;
+  font-weight: 700;
+  font-style: italic;
 }
 
 .logo {
