@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux"; // Assuming you use Redux for user state
+import { useSelector } from "react-redux";
 import { HiOutlineUserCircle } from "react-icons/hi";
-import ModalContainer from "./ModalContainer"; // Import ModalContainer
-import { RootState } from "../slices/store";
+import ModalContainer from "./ModalContainer";
+import { selectToken, selectIsExpired } from "../slices/authSlice";
+import { selectUserData, selectUserLogin } from "../slices/userSlice"; // Import the selector
 
 const UserInfo: React.FC = () => {
-  const selectUser = (state: RootState) => state.user;
-  const user = useSelector(selectUser);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Manage modal state
+  const token = useSelector(selectToken);
+  const isExpired = useSelector(selectIsExpired);
+  const userLogin = useSelector(selectUserLogin);
+
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -16,12 +20,13 @@ const UserInfo: React.FC = () => {
   return (
     <div className="flex items-center">
       <HiOutlineUserCircle />
-      {!user?.login && ( // Check if user is not logged in
+      {!token || isExpired ? (
         <span className="cursor-pointer underline" onClick={handleOpenModal}>
           Not Logged In
         </span>
+      ) : (
+        <span className="">User: {userLogin ? userLogin : "Loading..."}</span> // Use userLogin from userData
       )}
-      {user?.login && <span className="">{user.login}</span>}
       {isModalOpen && (
         <ModalContainer
           isOpen={isModalOpen}
