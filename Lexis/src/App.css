@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 #root {
   @apply gfs-neohellenic-regular;
   max-width: 1280px;
@@ -5,10 +9,14 @@
   /* padding: 2rem; */
   text-align: center;
 }
+.gold-text {
+  @apply text-gold-text;
+}
 .gfs-neohellenic-regular {
   font-family: "GFS Neohellenic", sans-serif;
   font-weight: 400;
   font-style: normal;
+  color: #1269C7;
 }
 
 .gfs-neohellenic-bold {

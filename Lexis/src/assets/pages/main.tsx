@@ -1,6 +1,6 @@
 import React from "react";
 import TopPanel from "../components/TopPanel";
-
+import SearchBar from "../components/SearchBar";
 
 const MainPage: React.FC = () => {
 
@@ -12,11 +12,11 @@ const MainPage: React.FC = () => {
         <button>Button 2</button>
       </TopPanel>
       <div className="w-full flex flex-row">
-        <div className="bg-red-500 w-1/5 min-w-64">Left Panel (20%)</div>
-        <div className="bg-green-500 grow">
-          Middle Content (60%)
+        <div className="w-1/5 min-w-64"></div>
+        <div className="grow flex flex-col justify-content-center items-center min-h-96 pt-8">
+          <SearchBar />
           </div>
-        <div className="bg-yellow-500 w-1/5">Right Panel (20%)</div>
+        <div className="w-1/5"></div>
       </div>
     </div>
   );
