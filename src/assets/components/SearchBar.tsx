@@ -33,7 +33,7 @@ export default function Example() {
         )
 
   return (
-    <div className="flex justify-center w-full">
+    <div className="flex justify-center w-3/5">
       <Combobox value={selected} onChange={setSelected}>
         <div className="relative mt-1 w-full">
         <div class="relative w-full cursor-default overflow-hidden text-left border-b border-dark-blue focus:outline-none sm:text-sm">

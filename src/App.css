@@ -4,10 +4,10 @@
 
 #root {
   @apply gfs-neohellenic-regular;
-  max-width: 1280px;
+  /* max-width: 1280px;
   margin: 0 auto;
-  /* padding: 2rem; */
-  text-align: center;
+  padding: 2rem;
+  text-align: center; */
 }
 .theme-main-color{
   @apply bg-gray-100
@@ -26,6 +26,12 @@
 }
 .dark-blue-text{
   @apply text-dark-blue;
+}
+.dark-blue-bg{
+  @apply bg-darkBlue;
+}
+.min-h-screen-minus-header-footer {
+  min-height: calc(100vh - 140px);
 }
 .gfs-neohellenic-regular {
   font-family: "GFS Neohellenic", sans-serif;
