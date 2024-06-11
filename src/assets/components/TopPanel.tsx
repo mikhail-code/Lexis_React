@@ -23,9 +23,10 @@ const TopPanel: React.FC<TopPanelProps> = () => {
   };
 
   const linkedList = [
-    { text: "Main", path: "/" },
-    { text: "Configuration", path: "/configuration" },
-    { text: "Help", path: "/help" },
+    { text: "Search", path: "/" },
+    { text: "My Dictionaries", path: "/dictionaries" },
+    { text: "Explore", path: "/explore" },
+    { text: "About", path: "/about" },
   ];
   const menuIconVariants = {
     hamburger: { src: LightningHamburgerMenu, transform: "translateY(0px)" }, // Default position
@@ -59,19 +60,20 @@ const TopPanel: React.FC<TopPanelProps> = () => {
           onClick={handleMenuClick}
           animate={menuIconVariants[currentIcon]} // Animate based on current icon variant
           variants={menuIconVariants} // Define variants for animation
+          style={{ position: "absolute", top: 25, left: 72, width: "full" }}
         />
       </div>
       <div className="flex items-center justify-center grow">
         <img src={LexisLogoDarkSVG} alt="Lexis Logo" width="130" height="130" />
       </div>
-      <div className="w-1/5">
+      <div className="w-1/5 flex items-center justify-center">
         <UserInfo />
       </div>
       {isOpen && (
         <motion.div
           variants={listVariants}
           animate={isOpen ? "open" : "closed"}
-          style={{ position: "absolute", top: 56, left: 72, width: "full" }}
+          style={{ position: "absolute", top: 30, left: 25, width: "full" }}
         >
           <ul className="list-none p-0 mt-2 flex flex-col justify-content-center items-center">
             {linkedList.map((link, index) => (
@@ -84,7 +86,7 @@ const TopPanel: React.FC<TopPanelProps> = () => {
                 custom={index} // Pass index for stagger effect
               >
                 {/* gfs-neohellenic-bold */}
-                <a href={link.path} className="gold-text">
+                <a href={link.path} className="gold-darker-text">
                   {link.text}
                 </a>
               </motion.li>
@@ -99,7 +101,7 @@ const TopPanel: React.FC<TopPanelProps> = () => {
                 alt="Lightning Line"
                 width="32"
                 height="32"
-                style={{ marginTop: "25px" }}
+                style={{ marginTop: "17px" }}
               />
             </motion.div>
           </ul>

@@ -8,6 +8,8 @@ export default {
     extend: {
       textColor: {
         'gold-text': '#F3C95D',
+        'gold-darker-text': '#FFB800',
+        'dark-blue': '#1269C7',
       },
     },
   },

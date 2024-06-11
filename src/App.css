@@ -9,8 +9,23 @@
   /* padding: 2rem; */
   text-align: center;
 }
+.theme-main-color{
+  @apply bg-gray-100
+}
+.theme-secondary-color{
+  @apply bg-sky-200
+}
+.theme-secondary-color-hover{
+  @apply bg-sky-400
+}
 .gold-text {
   @apply text-gold-text;
+}
+.gold-darker-text {
+  @apply text-gold-darker-text;
+}
+.dark-blue-text{
+  @apply text-dark-blue;
 }
 .gfs-neohellenic-regular {
   font-family: "GFS Neohellenic", sans-serif;
