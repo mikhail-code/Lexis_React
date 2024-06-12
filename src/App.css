@@ -28,7 +28,7 @@
   @apply text-dark-blue;
 }
 .dark-blue-bg{
-  @apply bg-darkBlue;
+  @apply bg-dark-blue;
 }
 .min-h-screen-minus-header-footer {
   min-height: calc(100vh - 140px);

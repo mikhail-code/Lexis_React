@@ -12,7 +12,7 @@ export default {
         'dark-blue': '#1269C7',
       },
       colors: { // Add the colors section
-        darkBlue: '#1269C7', // Access the color and rename it (optional)
+        'dark-blue': '#1269C7', // Access the color and rename it (optional)
       },
       minHeight: {
         'custom-screen-minus-100': 'calc(100vh - 100px)', // Use calc() for dynamic calculation

@@ -2,9 +2,9 @@ import React from "react";
 import Pattern from "../resources/img/Pattern.svg";
 
 const Footer = () => {
-  const patternWidth = 32;
-  const screenWidth = window.innerWidth;
-  const numPatterns = Math.ceil(screenWidth / patternWidth);
+  const patternWidth = window.innerWidth + 50;
+  // const screenWidth = window.innerWidth + 50;
+  const numPatterns = 1;
 
   const patternStyle = {
     width: patternWidth,
