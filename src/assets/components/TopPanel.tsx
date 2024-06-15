@@ -49,7 +49,7 @@ const TopPanel: React.FC<TopPanelProps> = () => {
   };
 
   return (
-    <div className="w-full flex flex-row justify-center items-center h-16">
+    <div className="w-full min-w-72 flex flex-row justify-center items-center h-16">
       <div className="w-1/5  min-w-64 h-full flex items-center justify-center">
         <motion.img
           // Use currentIcon for both src and variants

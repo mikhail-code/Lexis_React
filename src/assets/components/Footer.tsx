@@ -25,7 +25,7 @@ const Footer = () => {
           />
         ))}
       </div>
-      <p className="text-white">Lexis by Michael Shalom (2024)</p>
+      <p className="text-white pt-3">Lexis by Michael Shalom (2024)</p>
     </div>
   );
 };

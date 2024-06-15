@@ -20,6 +20,7 @@ interface User {
 interface UserState {
   // user: User | null;
   userLogin: string;
+  userID: string;
   name: string;
   surname: string;
   email: string;
@@ -31,6 +32,7 @@ interface UserState {
 }
 const initialState: UserState = {
   userLogin: "",
+  userID: "",
   name: "",
   surname: "",
   email: "",
