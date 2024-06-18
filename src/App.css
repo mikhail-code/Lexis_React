@@ -4,6 +4,7 @@
 
 #root {
   @apply gfs-neohellenic-regular;
+  @apply text-lg;
   /* max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;

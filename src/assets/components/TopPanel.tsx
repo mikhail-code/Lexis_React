@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../slices/store";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
 import LexisLogoDarkSVG from "../resources/img/LexisLogoDark.svg";
@@ -17,13 +18,19 @@ interface TopPanelProps {}
 
 const TopPanel: React.FC<TopPanelProps> = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  useEffect(() => {
+    // Set isOpen based on pathname (URL path)
+    const desiredOpenPaths = ["/explore", "/about", "/dictionaries"]; // Paths where you want isOpen to be true
+    setIsOpen(desiredOpenPaths.includes(location.pathname));
+  }, [location]);
 
   const handleMenuClick = () => {
     setIsOpen(!isOpen);
   };
 
   const linkedList = [
-    { text: "Search", path: "/" },
+    { text: "Lexis", path: "/" },
     { text: "My Dictionaries", path: "/dictionaries" },
     { text: "Explore", path: "/explore" },
     { text: "About", path: "/about" },
@@ -43,13 +50,12 @@ const TopPanel: React.FC<TopPanelProps> = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.3, delay: 0.2 } }, // Appear with slight delay and move down
   };
   const lightningLineVariants = {
-
     closed: { opacity: 0 }, // Initially invisible
     open: { opacity: 1, transition: { duration: 0.2, delay: 0.3 } }, // Appear after 0.5s delay
   };
 
   return (
-    <div className="w-full min-w-72 flex flex-row justify-center items-center h-16">
+    <div className="w-full min-w-72 flex flex-row justify-center items-center h-16 mt-4 mb-4">
       <div className="w-1/5  min-w-64 h-full flex items-center justify-center">
         <motion.img
           // Use currentIcon for both src and variants
@@ -60,7 +66,7 @@ const TopPanel: React.FC<TopPanelProps> = () => {
           onClick={handleMenuClick}
           animate={menuIconVariants[currentIcon]} // Animate based on current icon variant
           variants={menuIconVariants} // Define variants for animation
-          style={{ position: "absolute", top: 25, left: 72, width: "full" }}
+          style={{ position: "absolute", top: 35, left: 80, width: "full" }}
         />
       </div>
       <div className="flex items-center justify-center grow">
@@ -73,9 +79,9 @@ const TopPanel: React.FC<TopPanelProps> = () => {
         <motion.div
           variants={listVariants}
           animate={isOpen ? "open" : "closed"}
-          style={{ position: "absolute", top: 30, left: 25, width: "full" }}
+          style={{ position: "absolute", top: 45, left: 25, width: "full" }}
         >
-          <ul className="list-none p-0 mt-2 flex flex-col justify-content-center items-center">
+          <ul className="list-none p-0 mt-2 flex flex-col justify-content-center items-center font-bold">
             {linkedList.map((link, index) => (
               <motion.li
                 key={link.text}
@@ -83,12 +89,16 @@ const TopPanel: React.FC<TopPanelProps> = () => {
                 variants={itemVariants}
                 initial="hidden"
                 animate="visible"
-                custom={index} // Pass index for stagger effect
+                custom={index}
               >
-                {/* gfs-neohellenic-bold */}
-                <a href={link.path} className="gold-darker-text">
+                <NavLink
+                  to={link.path}
+                  className={({ isActive }) =>
+                    isActive ? "dark-blue-text" : "text-dark-gold"
+                  }
+                >
                   {link.text}
-                </a>
+                </NavLink>
               </motion.li>
             ))}
             <motion.div

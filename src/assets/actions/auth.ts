@@ -15,6 +15,7 @@ const LOGIN_URL = "http://localhost:3000/users/login";
 interface LoginResponse {
   // Define the shape of the response data
   token: string;
+  userID: string;
   login: string;
   name: string;
   surname: string;
@@ -38,7 +39,11 @@ export const login = createAsyncThunk<LoginResponse, LoginRequest>(
         login: loginData.loginOrEmail,
         password: loginData.password,
       });
+      // console.log("In auth");
+      // console.log(response.data);
+
       thunkAPI.dispatch(setUser({
+        userID: response.data.user.userID,
         userLogin: response.data.user.userLogin,
         name: response.data.user.name,
         surname: response.data.user.surname,
@@ -46,7 +51,8 @@ export const login = createAsyncThunk<LoginResponse, LoginRequest>(
         country: response.data.user.country,
         configuration: response.data.user.configuration,
       }));
-
+      // console.log("still in auth");
+      // console.log("userID sent " + response.data.userID);
 
       thunkAPI.dispatch({ type: 'auth/login/fulfilled' });
       return response.data;

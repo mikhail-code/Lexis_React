@@ -3,13 +3,12 @@ import { useSelector } from "react-redux";
 import { usePopper } from "react-popper";
 import ModalContainer from "./ModalContainer";
 import { selectToken, selectIsExpired } from "../slices/authSlice";
-import { selectUserData, selectUserLogin } from "../slices/userSlice";
+import { selectUserData } from "../slices/userSlice";
 import { HiOutlineUserCircle, HiOutlineX } from "react-icons/hi";
 
 const UserInfo: React.FC = () => {
   const token = useSelector(selectToken);
   const isExpired = useSelector(selectIsExpired);
-  const userLogin = useSelector(selectUserLogin);
   const userData = useSelector(selectUserData);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,11 +37,11 @@ const UserInfo: React.FC = () => {
         <HiOutlineUserCircle />
       </div>
       {!token || isExpired ? (
-        <span className="cursor-pointer underline" onClick={handleOpenModal}>
+        <span className="cursor-pointer underline ml-1" onClick={handleOpenModal}>
           Not Logged In
         </span>
       ) : (
-        <span className="">User: {userLogin ? userLogin : "Loading..."}</span>
+        <span className="">User: {userData.name+" "+userData.surname ? userData.name+" "+userData.surname : "Loading..."}</span>
       )}
       {isModalOpen && (
         <ModalContainer
@@ -54,8 +53,11 @@ const UserInfo: React.FC = () => {
         <div ref={popperRef} style={{...styles.popper, backgroundColor: 'white'}} {...attributes.popper}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div>
-              <div>User Name: {userData?.name}</div>
-              <div>Email: {userData?.email}</div>
+              <div>{userData?.userLogin}</div>
+              <div>{userData?.email}</div>
+              {/* TODO: */}
+              <div>Fluent: English</div> 
+              <div>Learning: Hebrew</div> 
             </div>
             <HiOutlineX onClick={handleClose} style={{ cursor: 'pointer' }} /> {/* Add close button */}
           </div>
