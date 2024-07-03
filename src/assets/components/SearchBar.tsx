@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../slices/store";
 
@@ -11,11 +11,14 @@ import {
 import { Word } from "../slices/dictionariesSlice";
 import { selectUserData } from "../slices/userSlice";
 
+import { selectToken, selectIsExpired } from "../slices/authSlice";
+
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { Description, Field, Input } from "@headlessui/react";
 import clsx from "clsx";
 
 import AddNewDictionaryModalWindow from "./AddNewDictionaryModalWindow";
+import LoginModalWindow from "./LoginModalWindow";
 
 interface DictionaryInfo {
   dictionaryName: string;
@@ -27,32 +30,48 @@ export default function SearchBar() {
   const [text, setText] = useState("");
   const [dictionaries, setDictionaries] = useState<DictionaryInfo[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isNewDictionaryModalOpen, setIsNewDictionaryModalOpen] =
+    useState(false);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const token = useSelector(selectToken);
+  const isExpired = useSelector(selectIsExpired);
+  const userData = useSelector(selectUserData);
   const translatedText = useSelector(
     (state: RootState) => state.translation.translatedText
   );
-  const dispatch = useDispatch<AppDispatch>();
 
-  const userData = useSelector(selectUserData);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
+  // Effect to fetch dictionaries when user is authenticated
+  useEffect(() => {
+    if (token && !isExpired && userData.userID) {
+      handleGetDictionaries();
+    }
+  }, [token, isExpired, userData.userID]);
 
   const handleTranslate = () => {
     dispatch(
       fetchTranslation({ text, sourceLanguage: "en", targetLanguage: "he" })
     ).then(() => setShowResults(true));
-    handleGetDictionaries();
+    if (userData.userID) {
+      handleGetDictionaries();
+    }
   };
 
   const handleGetDictionaries = () => {
-    dispatch(
-      checkWordInDictionaries({ userId: userData?.userID, word: text })
-    ).then((response) => {
-      const dictionariesData = response.payload; // Assuming the actual data is stored in the payload field
-      setDictionaries(dictionariesData);
-    });
+    if (!userData.userID) {
+      console.error("User ID is missing.");
+      return;
+    }
+
+    dispatch(checkWordInDictionaries({ userId: userData.userID, word: text }))
+      .then((response) => {
+        const dictionariesData = response.payload as DictionaryInfo[];
+        setDictionaries(dictionariesData);
+      })
+      .catch((error) => {
+        console.error("Error fetching dictionaries:", error.message);
+      });
   };
 
   const handleDeleteFromDictionary = async (
@@ -60,36 +79,41 @@ export default function SearchBar() {
     wordToDelete: string
   ) => {
     await dispatch(
-      deleteWordFromDictionary({
-        dictionaryId: dictionaryId,
-        word: wordToDelete,
-      })
-    );
-    handleGetDictionaries();
-  };
-  const handleAddToDictionary = async (dictionaryId: string) => {
-    const wordToAdd: Word = {
-      word: text,
-      translation: translatedText,
-    };
-    await dispatch(
-      addWordToDictionary({
-        dictionaryId: dictionaryId,
-        word: wordToAdd,
-      })
+      deleteWordFromDictionary({ dictionaryId, word: wordToDelete })
     );
     handleGetDictionaries();
   };
 
+  const handleAddToDictionary = async (dictionaryId: string) => {
+    const wordToAdd = { word: text, translation: translatedText };
+    await dispatch(addWordToDictionary({ dictionaryId, word: wordToAdd }));
+    handleGetDictionaries();
+  };
+
+  const handleOpenLoginModal = () => setIsLoginModalOpen(true);
+  const handleCloseLoginModal = () => setIsLoginModalOpen(false);
+  const handleOpenNewDictionaryModal = () => setIsNewDictionaryModalOpen(true);
+  const handleCloseNewDictionaryModal = () =>
+    setIsNewDictionaryModalOpen(false);
+
   return (
     <div className="flex flex-col items-center justify-center text-center text-2xl mt-32">
-      {isModalOpen && (
-        <AddNewDictionaryModalWindow
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onUpdateDictionaries={handleGetDictionaries} // Pass the function as a prop
-      />
+      {isLoginModalOpen && (
+        <LoginModalWindow
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          onUpdateDictionaries={handleGetDictionaries} // Pass the function as a prop
+        />
       )}
+
+      {isNewDictionaryModalOpen && (
+        <AddNewDictionaryModalWindow
+          isOpen={isNewDictionaryModalOpen}
+          onClose={() => setIsNewDictionaryModalOpen(false)}
+          onUpdateDictionaries={handleGetDictionaries} // Pass the function as a prop
+        />
+      )}
+
       <div className="w-full px-1 min-w-96">
         <Field>
           <div className="flex flex-grid items-center justify-center text-center ">
@@ -131,40 +155,67 @@ export default function SearchBar() {
           <div>
             <strong>Translation:</strong> {translatedText}
           </div>
-          <div className="flex flex-col items-left justify-left text-left pl-8">
-            <p className="">Add to dictionary (✓)</p>
-            <div className="flex flex-col items-left justify-left text-left">
-              {dictionaries.map((dictionary) => (
-                <label key={dictionary.dictionaryName}>
-                  <span className="mr-2">
-                    <input
-                      type="checkbox"
-                      checked={dictionary.exists}
-                      onChange={() => {
-                        if (!dictionary.exists) {
-                          handleAddToDictionary(dictionary.dictionaryId);
-                        } else {
-                          handleDeleteFromDictionary(
-                            dictionary.dictionaryId,
-                            text
-                          );
-                        }
-                      }}
-                      className="h-4 w-4"
-                    />
-                  </span>
-                  {dictionary.dictionaryName}
-                </label>
-              ))}
-              <span
-                className="cursor-pointer underline mt-2 text-lg"
-                onClick={handleOpenModal}
-              >
-                + Add new dictionary
-              </span>
+          {!token || isExpired ? (
+            <span
+              className="cursor-pointer underline ml-1"
+              onClick={handleOpenLoginModal}
+            >
+              Login with your account to save phrase to your dictionary!
+            </span>
+          ) : (
+            <div className="flex flex-col items-left justify-left text-left pl-8">
+              <p className="">Add to dictionary (✓)</p>
+              <div className="flex flex-col items-left justify-left text-left">
+                {dictionaries.length > 0 ? (
+                  dictionaries.map((dictionary) => (
+                    <label key={dictionary.dictionaryName}>
+                      <input
+                        type="checkbox"
+                        checked={dictionary.exists}
+                        onChange={() => {
+                          if (!dictionary.exists) {
+                            handleAddToDictionary(dictionary.dictionaryId);
+                          } else {
+                            handleDeleteFromDictionary(
+                              dictionary.dictionaryId,
+                              text
+                            );
+                          }
+                        }}
+                        className="h-4 w-4 mr-2"
+                      />
+                      {dictionary.dictionaryName}
+                    </label>
+                  ))
+                ) : (
+                  <p>No dictionaries found...</p>
+                )}
+                <span
+                  className="cursor-pointer underline mt-2 text-lg"
+                  onClick={handleOpenNewDictionaryModal}
+                >
+                  + Add new dictionary
+                </span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
+      )}
+
+      {isLoginModalOpen && (
+        <LoginModalWindow
+          isOpen={isLoginModalOpen}
+          onClose={handleCloseLoginModal}
+          onUpdateDictionaries={handleGetDictionaries}
+        />
+      )}
+
+      {isNewDictionaryModalOpen && (
+        <AddNewDictionaryModalWindow
+          isOpen={isNewDictionaryModalOpen}
+          onClose={handleCloseNewDictionaryModal}
+          onUpdateDictionaries={handleGetDictionaries}
+        />
       )}
     </div>
   );

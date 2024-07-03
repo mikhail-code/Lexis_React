@@ -3,6 +3,7 @@ import { SVGProps } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../actions/auth";
 import { RootState, AppDispatch } from "../slices/store";
+import { unwrapResult } from '@reduxjs/toolkit';
 
 const XIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
   <svg
@@ -22,44 +23,42 @@ const XIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
-export const LoginModalWindow: FC<{ onClose: () => void }> = ({ onClose }) => {
-  const dispatch: AppDispatch = useDispatch(); // The dispatch function from useDispatch is typed to dispatch actions of type AnyAction by default. However, the login action you’re trying to dispatch is an async thunk action, which has a different type. To fix this, you need to use the specific AppDispatch type from your store instead of the generic Dispatch type.
+export const LoginModalWindow: FC<{
+  onClose: () => void;
+  onUpdateDictionaries?: () => void;
+}> = ({ onClose, onUpdateDictionaries }) => {
+  const dispatch = useDispatch(); // The dispatch function from useDispatch is typed to dispatch actions of type AnyAction by default. However, the login action you’re trying to dispatch is an async thunk action, which has a different type. To fix this, you need to use the specific AppDispatch type from your store instead of the generic Dispatch type.
   const isLoginLoading = useSelector(
     (state: RootState) => state.auth.isLoading
+  );
+  const authToken = useSelector(
+    (state: RootState) => state.auth.token
   );
 
   const handleClose = () => {
     onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
-    const loginOrEmail = (
-      form.elements.namedItem("loginOrEmail") as
-        | HTMLInputElement
-        | HTMLTextAreaElement
-    )?.value;
-    const password = (
-      form.elements.namedItem("password") as
-        | HTMLInputElement
-        | HTMLTextAreaElement
-    )?.value;
+    const loginOrEmail = (form.elements.namedItem("loginOrEmail") as HTMLInputElement)?.value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement)?.value;
 
-    dispatch(login({ loginOrEmail, password }))
-      .then((response) => {
-        console.log(response);
-        if (response.type === "auth/login/fulfilled") {
-          e;
-          onClose();
-        } else {
-          console.error("Unexpected response type:", response.type);
-        }
-      })
-      .catch((error) => {
-        console.error("Login error:", error);
-      });
+    try {
+      const resultAction = await dispatch(login({ loginOrEmail, password }));
+      const loginResult = unwrapResult(resultAction);
+      if (loginResult.token && loginResult.user) {
+        onUpdateDictionaries?.();
+        onClose();
+      } else {
+        console.error("Login failed: No token or user data received");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+    }
   };
+
   return (
     <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg dark:bg-gray-950 relative">
       <button

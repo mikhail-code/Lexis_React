@@ -1,7 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios"; // Assuming Axios is installed
 import { jwtDecode } from 'jwt-decode';
-import { setUser } from '../slices/userSlice'; // Import the setUser action
+import { setToken, setUserId } from '../slices/authSlice';
+import { setUserAsync } from '../slices/userSlice'; // Import the setUser action
 
 
 interface LoginRequest {
@@ -13,36 +14,38 @@ const LOGIN_URL = "http://localhost:3000/users/login";
 
 // This code defines a Redux Thunk action creator named login:
 interface LoginResponse {
-  // Define the shape of the response data
   token: string;
-  userID: string;
-  login: string;
-  name: string;
-  surname: string;
-  email: string;
-  country: string;
-  configuration: {
-    main_language: string;
-    learning_language: string;
+  user: {
+    userID: string;
+    userLogin: string;
+    name: string;
+    surname: string;
+    email: string;
+    country: string;
+    configuration: {
+      base_language: string;
+      learning_languages: string[];
+    };
   };
-
-  // Add other properties as needed
 }
+
 export const login = createAsyncThunk<LoginResponse, LoginRequest>(
   "auth/login",
   async (loginData, thunkAPI) => {
     try {
-      // Set isLoading to true before making the request
       thunkAPI.dispatch({ type: 'auth/login/pending' });
-
-      const response = await axios.post(LOGIN_URL, {
+      const response = await axios.post<LoginResponse>(LOGIN_URL, {
         login: loginData.loginOrEmail,
         password: loginData.password,
       });
-      // console.log("In auth");
-      // console.log(response.data);
 
-      thunkAPI.dispatch(setUser({
+      console.log("In auth");
+      console.log(response.data);
+      thunkAPI.dispatch(setToken(response.data.token));
+      thunkAPI.dispatch(setUserId(response.data.user.userID))
+
+      // Dispatch setUserAsync and wait for it to complete
+      await thunkAPI.dispatch(setUserAsync({
         userID: response.data.user.userID,
         userLogin: response.data.user.userLogin,
         name: response.data.user.name,
@@ -51,14 +54,14 @@ export const login = createAsyncThunk<LoginResponse, LoginRequest>(
         country: response.data.user.country,
         configuration: response.data.user.configuration,
       }));
-      // console.log("still in auth");
-      // console.log("userID sent " + response.data.userID);
 
+      // Now that setUserAsync has completed, dispatch the fulfilled action
       thunkAPI.dispatch({ type: 'auth/login/fulfilled' });
+
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error); // Handle errors
-    } 
+      return thunkAPI.rejectWithValue(error);
+    }
   }
 );
 
