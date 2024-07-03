@@ -1,20 +1,19 @@
-import { createSlice, createSelector } from '@reduxjs/toolkit';
+import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from "./store";
 import { login } from "../actions/auth";
 
-
 interface AuthState {
   token: string | null;
-  isExpired: boolean;
   isLoading: boolean;
-  error: string | null;
+  isExpired: boolean;
+  userId: string | null; // Add userId to the auth state
 }
 
 const initialState: AuthState = {
   token: null,
-  isExpired: false,
   isLoading: false,
-  error: null, // Initialize the error field
+  isExpired: false,
+  userId: null, // Initialize userId as null
 };
 
 const selectAuthState = (state: RootState) => state.auth;
@@ -40,6 +39,14 @@ export const authSlice = createSlice({
     setIsExpired: (state) => {
       state.isExpired = true;
     },
+    setUserId: (state, action: PayloadAction<string>) => {
+      state.userId = action.payload;
+    },
+    logout: (state) => {
+      state.token = null;
+      state.isExpired = false;
+      state.userId = null; // Clear userId on logout
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -60,5 +67,8 @@ export const authSlice = createSlice({
   },
 });
 
-export const { setToken, setIsExpired } = authSlice.actions;
+export const { setToken, setIsExpired, setUserId, logout } = authSlice.actions;
+
+export const selectUserId = (state: RootState) => state.auth.userId;
+
 export default authSlice.reducer;

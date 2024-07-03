@@ -123,9 +123,20 @@ export const checkWordInDictionaries = createAsyncThunk(
   "dictionaries/checkWordInDictionaries",
   async (params: { userId: string; word: string }, thunkAPI) => {
     try {
+      if (!params.userId) {
+        // Handle missing userId (e.g., show an error message)
+        throw new Error("User ID is required.");
+      }
+
       const response = await axios.get(DICTIONARIES_URL + `/checked`, {
         params, // Use params here to send them as query parameters
       });
+
+      // Validate response data type (assuming it's an array)
+      if (!Array.isArray(response.data)) {
+        throw new Error("Unexpected response format.");
+      }
+
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue("Error checking word in dictionaries");

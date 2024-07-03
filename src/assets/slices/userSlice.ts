@@ -1,4 +1,4 @@
-import { createSlice, createSelector, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createSelector, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 
 export interface User {
@@ -61,22 +61,26 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setUser(state, action: PayloadAction<User | null>) {
+    setUserSync(state, action: PayloadAction<User | null>) {
       if (action.payload) {
-        // console.log("In userSlice");
-        // console.log(action.payload);
         Object.assign(state, action.payload);
-        // console.log("state.user " + state.userLogin) // so we have user login here...
+        console.log("user assingned: " + state.userID)
       } else {
-        // Handle the case when action.payload is null
-        // You can reset the state to its initial value or perform any other necessary actions
         Object.assign(state, initialState);
-        // console.log("state.user " + state.userLogin) // so we have user login here...
       }
     },
   },
 });
 
-export const { setUser } = userSlice.actions;
+export const { setUserSync } = userSlice.actions;
+
+// Create an async thunk for setting user
+export const setUserAsync = createAsyncThunk<void, User | null>(
+  'user/setUserAsync',
+  async (userData, { dispatch }) => {
+    dispatch(setUserSync(userData));
+  }
+);
+
 export default userSlice.reducer;
 

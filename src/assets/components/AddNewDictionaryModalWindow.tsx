@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { login } from "../actions/auth";
 import { RootState, AppDispatch } from "../slices/store";
 import { selectUserData } from "../slices/userSlice";
+import React, { FormEvent } from "react";
 
 import { addNewDictionary } from "../actions/dictionaries";
 
@@ -27,7 +28,7 @@ const XIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
 
 export const AddNewDictionaryModalWindow: FC<{
     onClose: () => void;
-    onUpdateDictionaries: () => void; // Accept the new prop
+    onUpdateDictionaries: () => void;
   }> = ({ onClose, onUpdateDictionaries }) => {
   const dispatch = useDispatch<AppDispatch>();
   const userData = useSelector(selectUserData);
