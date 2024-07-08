@@ -8,8 +8,15 @@ import {
 export interface Word {
   word: string;
   translation: string;
-  transliteration?: string; // Optional transliteration property
-  comment?: string; // Optional comment property
+  transliteration?: string; 
+  comment?: string; 
+}
+export interface DictionaryInfoItem {
+  dictionaryName: string;
+  dictionaryId: string;
+  exists: boolean;
+  lastModified?: Date;
+  wordsAmount?: number;
 }
 export interface DictionaryInfo {
   id: string;
@@ -20,6 +27,7 @@ export interface DictionaryInfo {
   learning_language: string;
   owner_uuid: string;
   lastModified?: Date;
+  wordsAmount?: number;
 }
 export interface Dictionary {
   id: string;
@@ -31,6 +39,7 @@ export interface Dictionary {
   owner_uuid: string;
   words: Word[];
   lastModified?: Date;
+  wordsAmount?: number;
 }
 
 interface DictionariesState {
