@@ -6,14 +6,18 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   isExpired: boolean;
-  userId: string | null; // Add userId to the auth state
+  userId: string | null;
+  error: string | null;
+  lastLogin: number | null;
 }
 
 const initialState: AuthState = {
   token: null,
   isLoading: false,
   isExpired: false,
-  userId: null, // Initialize userId as null
+  userId: null,
+  error: null,
+  lastLogin: null
 };
 
 const selectAuthState = (state: RootState) => state.auth;
@@ -52,17 +56,24 @@ export const authSlice = createSlice({
     builder
       .addCase(login.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
       })
       .addCase(login.fulfilled, (state, action) => {
         if (action.payload) {
-          state.token = action.payload.token; // Update the token in the state
-
+          state.token = action.payload.token;
+          state.userId = action.payload.user.userID;
+          state.lastLogin = Date.now();
+          state.isExpired = false;
+          state.error = null;
         }
         state.isLoading = false;
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error?.message ?? null; // Handle login errors
+        state.error = action.payload?.message ?? action.error?.message ?? 'Login failed';
+        state.token = null;
+        state.userId = null;
+        state.isExpired = false;
       });
   },
 });

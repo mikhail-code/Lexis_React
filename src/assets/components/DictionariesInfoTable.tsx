@@ -19,18 +19,31 @@ const DictionariesInfoTable: React.FC<Props> = ({
     direction: "ascending" | "descending";
   } | null>(null);
 
+  const SORTABLE_KEYS: Array<keyof DictionaryInfo> = [
+    "name",
+    "owner",
+    "learning_language",
+    "lastModified"
+  ];
+
   const sortedDictionaries = React.useMemo(() => {
     const sortableDictionaries = [...dictionaries];
     if (sortConfig !== null) {
       sortableDictionaries.sort((a, b) => {
-        if (sortConfig && sortConfig.key in a && sortConfig.key in b) {
-          if (a[sortConfig.key] < b[sortConfig.key]) {
-            return sortConfig.direction === "ascending" ? -1 : 1;
-          }
-          if (a[sortConfig.key] > b[sortConfig.key]) {
-            return sortConfig.direction === "ascending" ? 1 : -1;
-          }
+        if (!sortConfig) return 0;
+        
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        
+        if (aValue === undefined || bValue === undefined) return 0;
+        
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          const comparison = aValue.localeCompare(bValue);
+          return sortConfig.direction === 'ascending' ? comparison : -comparison;
         }
+        
+        if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
         return 0;
       });
     }
@@ -57,7 +70,7 @@ const DictionariesInfoTable: React.FC<Props> = ({
     setSortConfig({ key, direction });
   };
 
-  function formatHeaderName(key: string): string {
+  const formatHeaderName = (key: keyof DictionaryInfo): string => {
     switch (key) {
       case "name":
         return "Name";
@@ -70,14 +83,14 @@ const DictionariesInfoTable: React.FC<Props> = ({
       default:
         return key;
     }
-  }
+  };
 
   return (
     <div>
       <p className="mb-2 text-2xl">
         <strong>Subscribed Dictionaries</strong>
       </p>
-      <div class="flex flex-grid items-left items-center gap-x-8">
+      <div className="flex flex-grid items-left items-center gap-x-8">
         <input
           type="text"
           placeholder="Search dictionary name..."
@@ -99,41 +112,39 @@ const DictionariesInfoTable: React.FC<Props> = ({
       <table className="mt-4">
         <thead>
           <tr className="border-b border-dark-blue">
-            {["name", "owner", "learning_language", "lastModified"].map(
-              (key) => (
-                <th
-                  key={key}
-                  className={`pr-4 py-2 ${
-                    sortConfig?.key === key ? "text-gold-darker-text" : ""
-                  }`}
-                  onClick={() => requestSort(key)}
-                >
-                  <div className="flex items-center justify-left hover:cursor-pointer">
-                    <span className="flex-grow text-left">
-                      {formatHeaderName(key)}
-                    </span>
-                    <span className="flex flex-col items-center">
-                      <FaSortUp
-                        className={`${
-                          sortConfig?.key === key &&
-                          sortConfig.direction === "ascending"
-                            ? "visible"
-                            : "invisible"
-                        }`}
-                      />
-                      <FaSortDown
-                        className={`${
-                          sortConfig?.key === key &&
-                          sortConfig.direction === "descending"
-                            ? "visible"
-                            : "invisible"
-                        }`}
-                      />
-                    </span>
-                  </div>
-                </th>
-              )
-            )}
+            {SORTABLE_KEYS.map((key) => (
+              <th
+                key={key}
+                className={`pr-4 py-2 ${
+                  sortConfig?.key === key ? "text-gold-darker-text" : ""
+                }`}
+                onClick={() => requestSort(key)}
+              >
+                <div className="flex items-center justify-left hover:cursor-pointer">
+                  <span className="flex-grow text-left">
+                    {formatHeaderName(key)}
+                  </span>
+                  <span className="flex flex-col items-center">
+                    <FaSortUp
+                      className={`${
+                        sortConfig?.key === key &&
+                        sortConfig.direction === "ascending"
+                          ? "visible"
+                          : "invisible"
+                      }`}
+                    />
+                    <FaSortDown
+                      className={`${
+                        sortConfig?.key === key &&
+                        sortConfig.direction === "descending"
+                          ? "visible"
+                          : "invisible"
+                      }`}
+                    />
+                  </span>
+                </div>
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>

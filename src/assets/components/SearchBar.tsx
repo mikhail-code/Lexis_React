@@ -64,7 +64,7 @@ export default function SearchBar() {
       return;
     }
 
-    dispatch(checkWordInDictionaries({ userId: userData.userID, word: text }))
+    dispatch(checkWordInDictionaries(text))
       .then((response) => {
         const dictionariesData = response.payload as DictionaryInfo[];
         setDictionaries(dictionariesData);

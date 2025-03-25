@@ -1,47 +1,79 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Word } from "../slices/dictionariesSlice";
 
-const DICTIONARIES_URL = "http://localhost:3000/dictionaries";
+interface ApiError {
+  message: string;
+  statusCode: number;
+}
 
-export const addNewDictionary = createAsyncThunk(
+export interface Dictionary {
+  id: string;
+  name: string;
+  tags: string[];
+  main_language: string;
+  learning_language: string;
+  words: Word[];
+  owner: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DictionaryWithWordCheck extends Dictionary {
+  hasWord: boolean;
+}
+
+interface DictionaryResponse {
+  message: string;
+  dictionary: Dictionary;
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const DICTIONARIES_URL = `${API_BASE_URL}/dictionaries`;
+
+export interface NewDictionaryData {
+  name: string;
+  tags?: string[];
+  main_language?: string;
+  learning_language?: string;
+  words?: Word[];
+}
+
+export const addNewDictionary = createAsyncThunk<DictionaryResponse, NewDictionaryData, { rejectValue: ApiError }>(
     "dictionaries/addNew",
-    async (dictionaryData: {
-      name: string;
-      tags?: string[];
-      main_language?: string;
-      learning_language?: string;
-      words: Word[];
-      owner: string;
-    }, thunkAPI) => {
+    async (dictionaryData: NewDictionaryData, thunkAPI) => {
       try {
         const response = await axios.post(DICTIONARIES_URL, {
-          name: dictionaryData.name || "New Dictionary",
+          name: dictionaryData.name,
           tags: dictionaryData.tags || [],
           main_language: dictionaryData.main_language || "English",
           learning_language: dictionaryData.learning_language || "Hebrew",
-          words: dictionaryData.words || [],
-          owner: dictionaryData.owner || "unknown",
+          words: dictionaryData.words || []
         });
-        console.log(dictionaryData);
         return response.data;
       } catch (error) {
-        return thunkAPI.rejectWithValue("Error creating new dictionary");
+        const axiosError = error as AxiosError<ApiError>;
+        return thunkAPI.rejectWithValue({
+          message: axiosError.response?.data?.message || "Error creating new dictionary",
+          statusCode: axiosError.response?.status || 500
+        });
       }
     }
   );
   
   
-  export const deleteDictionaryById = createAsyncThunk(
+  export const deleteDictionaryById = createAsyncThunk<{ dictionaryId: string }, string, { rejectValue: ApiError }>(
     "dictionaries/deleteById",
-    async (params: { dictionaryId: string; userId: string }, thunkAPI) => {
+    async (dictionaryId: string, thunkAPI) => {
       try {
-        const { dictionaryId, userId } = params;
-        await axios.delete(`${DICTIONARIES_URL}/${dictionaryId}`, {
-          data: { userId },
-        });
+        await axios.delete(`${DICTIONARIES_URL}/${dictionaryId}`);
+        return { dictionaryId };
       } catch (error) {
-        return thunkAPI.rejectWithValue("Error deleting dictionary");
+        const axiosError = error as AxiosError<ApiError>;
+        return thunkAPI.rejectWithValue({
+          message: axiosError.response?.data?.message || "Error deleting dictionary",
+          statusCode: axiosError.response?.status || 500
+        });
       }
     }
   );
@@ -61,30 +93,34 @@ export const fetchDictionaryData = createAsyncThunk(
     }
   );
 
-export const fetchDictionariesFull = createAsyncThunk(
+export const fetchDictionariesFull = createAsyncThunk<Dictionary[], void, { rejectValue: ApiError }>(
   "dictionaries/fetchDictionariesWithWords",
-  async (params: { userId: string }, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const response = await axios.get(DICTIONARIES_URL + "/", {
-        params,
-      });
+      const response = await axios.get(`${DICTIONARIES_URL}/withWords`);
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue("Error fetching dictionaries with words");
+      const axiosError = error as AxiosError<ApiError>;
+      return thunkAPI.rejectWithValue({
+        message: axiosError.response?.data?.message || "Error fetching dictionaries with words",
+        statusCode: axiosError.response?.status || 500
+      });
     }
   }
 );
 
-export const fetchDictionariesInfo = createAsyncThunk(
+export const fetchDictionariesInfo = createAsyncThunk<Dictionary[], void, { rejectValue: ApiError }>(
   "dictionaries/fetchDictionaries",
-  async (params: { userId: string }, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const response = await axios.get(DICTIONARIES_URL + "/", {
-        params,
-      });
+      const response = await axios.get(DICTIONARIES_URL);
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue("Error fetching dictionaries");
+      const axiosError = error as AxiosError<ApiError>;
+      return thunkAPI.rejectWithValue({
+        message: axiosError.response?.data?.message || "Error fetching dictionaries",
+        statusCode: axiosError.response?.status || 500
+      });
     }
   }
 );
@@ -96,8 +132,9 @@ export const addWordToDictionary = createAsyncThunk(
       const { dictionaryId, word } = params;
       const response = await axios.post(
         `${DICTIONARIES_URL}/${dictionaryId}/word`,
-        { word }
+        word
       );
+      console.log(response.data);
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue("Error adding word");
@@ -119,27 +156,33 @@ export const deleteWordFromDictionary = createAsyncThunk(
   }
 );
 
-export const checkWordInDictionaries = createAsyncThunk(
+export const checkWordInDictionaries = createAsyncThunk<DictionaryWithWordCheck[], string, { rejectValue: ApiError }>(
   "dictionaries/checkWordInDictionaries",
-  async (params: { userId: string; word: string }, thunkAPI) => {
+  async (word: string, thunkAPI) => {
     try {
-      if (!params.userId) {
-        // Handle missing userId (e.g., show an error message)
-        throw new Error("User ID is required.");
+      if (!word) {
+        throw new Error("Word parameter is required.");
       }
 
-      const response = await axios.get(DICTIONARIES_URL + `/checked`, {
-        params, // Use params here to send them as query parameters
+      // Configure axios to use traditional array parameter serialization
+      const response = await axios.get(`${DICTIONARIES_URL}/checked`, {
+        params: { word },
+        paramsSerializer: {
+          indexes: null // This ensures params are sent as word=value instead of word[]=value
+        }
       });
 
-      // Validate response data type (assuming it's an array)
       if (!Array.isArray(response.data)) {
         throw new Error("Unexpected response format.");
       }
 
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue("Error checking word in dictionaries");
+      const axiosError = error as AxiosError<ApiError>;
+      return thunkAPI.rejectWithValue({
+        message: axiosError.response?.data?.message || "Error checking word in dictionaries",
+        statusCode: axiosError.response?.status || 500
+      });
     }
   }
 );
